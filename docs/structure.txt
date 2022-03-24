@@ -1,0 +1,22 @@
+    .
+    |-- bin
+    |   `-- my_program
+    |-- docs
+    |   `-- doc.txt
+    |-- my_program
+    |   |-- data
+    |   |   `-- some_data.html
+    |   |-- __init__.py
+    |   |-- submodule
+    |   |   `-- __init__.py
+    |   |-- helpers.py
+    |-- tests
+    |   |-- __init__.py
+    |   |-- test_helpers.py
+    |-- Makefile
+    |-- CHANGES.txt
+    |-- LICENSE.txt
+    |-- README.md
+    |-- requirements-dev.txt
+    |-- requirements.txt
+    `-- setup.py
