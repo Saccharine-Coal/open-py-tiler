@@ -3,23 +3,25 @@ from collections import namedtuple
 from typing import Union
 
 from core.math import constants
-from core.math.points import point_functions, xy, xyz
+from core.math.points.xy  import PointXY
+from core.math.points.xyz import PointXYZ
+from core.math.points import point_functions
 
 
 class PointQRSZ(namedtuple("Point4", "q r s z")):
 
-    def project(self, projection_matrix, *linear_transformations) -> xy.PointXY:
+    def project(self, projection_matrix, *linear_transformations) -> PointXY:
         xyz = self.xyz
         """Applies transformation matrices to given an xyz. R^3 => R^3 """
         for linear_transformation in linear_transformations:
             xyz = linear_transformation.transform(xyz)
         """Multiply a projection matrix to an xyz. R^3 => R^2"""
         xy = projection_matrix.transform(xyz)
-        self.projection = PointXY(*xy)
-        return xy.PointXY(*xy)
+        self.projection =  PointXY(*xy)
+        return PointXY(*xy)
 
     @property
-    def xyz(self) -> xyz.PointXYZ:
+    def xyz(self) -> PointXYZ:
         """(q, r, s, z) -> (x, y, z)"""
         # dirty "matrix"
         ROOT_3 = constants.ROOT_3
@@ -27,9 +29,9 @@ class PointQRSZ(namedtuple("Point4", "q r s z")):
         #r = -(q + s)
         x = ROOT_3 * q + (ROOT_3/2) * r
         y =                     1.5 * r
-        return xyz.PointXYZ(x, y, z)
+        return PointXYZ(x, y, z)
 
-    def _round(self, val) -> Union[float, int]:
+    def _round(self, val) -> Union [float, int]:
         # is int
         if isinstance(val, int): return val
         # is float
@@ -39,15 +41,15 @@ class PointQRSZ(namedtuple("Point4", "q r s z")):
         if rounding_needed: return rounded
         else: return val
 
-    def add(self, other: Union[tuple, PointQRSZ]) -> PointQRSZ:
+    def add(self, other: Union[tuple,  PointQRSZ]) -> PointQRSZ:
         if point_functions.operation_conditions_met(self, other):
-            return PointQRSZ(*points.add(self, other))
+            return PointQRSZ(*point_functions.add(self, other))
         """Not sure why I am rounding below"""
         #if isinstance(other, tuple) and len(other) == len(self):
             #tup = tuple(a + b for a, b in zip(self, other))
             #tup = tuple(self._round(val) for val in tup)
             #return PointQRSZ(*tup)
-        #else: raise ValueError
+        #else:  raise Value Error
 
     def mult(self, factor: Union[float, int]) -> PointQRSZ:
         return PointQRSZ(*point_functions.mult(self, factor))
@@ -57,4 +59,3 @@ QVECTOR = PointQRSZ(+1, -1, 0, 0)
 RVECTOR = PointQRSZ(0, +1, -1, 0)
 SVECTOR = PointQRSZ(-1, 0, +1, 0)
 ZVECTOR = PointQRSZ(0, 0, 0, +1)
-

@@ -2,14 +2,13 @@ from __future__ import annotations
 
 import pygame as pg
 
-from core.abstract import hash_arrays
-from core.math import points
-from elements import sprites
+#from core.world.arrays.qrsz_array import HashArrayQRSZ
+from core.math.points.qrsz import PointQRSZ
+from core.sprites import sprite4
 
-
-class Tile(sprites.Sprite4):
+class Tile(sprite4.Sprite4):
     "inherit from sprite"
-    def __init__(self, array: hash_arrays.AbstractAxialHashArray, index: points.PointQRSZ, image: pg.Surface) -> None:
+    def __init__(self, array, index: PointQRSZ, image: pg.Surface):
         self._array = array
         super().__init__(index, image)
         
@@ -17,13 +16,11 @@ class Tile(sprites.Sprite4):
         return f"{self.__class__.__name__}: {self.formatted_qrsz}"
 
     @property
-    def index(self) -> points.PointQRSZ:
+    def index(self) -> PointQRSZ:
         return self.qrsz
-
-    @property
-    def tiles_around_self(self) -> list[Tile]:
-        return self._array.get_radial_tiles(self.index, 1, plane_only=True)
-
+#    @property
+#    def tiles_around_self(self) -> list[Tile]:
+#        return self._array.get_radial_tiles(self.index, 1, plane_only=True)
     def draw(self, surface: pg.Surface) -> None:
         super().draw(surface)
         if self._verbose:

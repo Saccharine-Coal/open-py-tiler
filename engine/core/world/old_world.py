@@ -1,22 +1,35 @@
+from random import randint
+
 import pygame as pg
 
-from core.world.arrays.qrsz_array import HashArrayQRSZ
-from core.math.transformations import projections, translations, scalers
-from core.world import tiles
-from core.sprites import sprite
+from elements.world import hash_array, tiles, axes
+from core.math import points, projections, translations
+from core.abstract import sprites
+import elements.sprites
 
-class WorldQRSZ(sprite.Sprite):
+
+class HexagonalWorld(sprites.AbstractActiveSprite):
     """Holds grids, projection, and translation matrices."""
-    def __init__(self, qrz_dimensions):
-        # init array
-        self._array = HashArrayQRSZ(qrz_dimensions)
-        path = "/home/pi/local_code/open_src_tile_engine/engine/data/assets/sprites/floor-1.png"
-        surface = pg.image.load(path).convert_alpha()
-        self._array.populate(tiles.Tile, surface)
-        # init matrices
-        self._proj_mx = projections.IsometricProjection(1)
-        self._trans_mx = translations.TranslationMatrix3((10, 100, 0))
-        self._scale_mx = scalers.ScalingMatrix3(50)
+    def __init__(self, game, surface, origin: tuple, dimensions: tuple, unit_size: int, file_manager):
+        self._game = game
+        self.unit_size = unit_size
+        self.set_bounding_rect(surface.get_rect())
+        self.ZOOM_LEVELS = ZOOM_LEVELS = (5, 10, 40, 70, 150)
+        self.zoom_i = 0
+        self.update_zoom = True
+        self.projector = projections.IsometricProjector(self.get_level())
+        self.translator = translations.Translator(origin)
+        self.updated = True
+        self.array = hash_array.AxialHashArray(*dimensions, unit_size)
+        file_manager.add("basic.png", ["assets", "sprites"])
+        file_manager.add("uniform_lighting.png", ["assets", "sprites"])
+        self.array.populate(tiles.Tile, file_manager.get("uniform_lighting.png", ["assets", "sprites"]))
+        self.axis = axes.Axes(unit_size)
+        # self.player = elements.sprites.AnimatedSprite((0, 0, 0, 0), unit_size)
+        self.direction = points.PointQRSZ(0, 0, 0, 0)
+        self.update(dt=0)
+
+
 
     def __repr__(self) -> str:
         return self.__class__.__name__
@@ -30,7 +43,6 @@ class WorldQRSZ(sprite.Sprite):
         self.surface = pg.Surface(bounding_rect.size)
 
     def handle_events(self, event):
-        return
         if event.type == pg.KEYDOWN:
             self.updated = True
         if event.type == pg.MOUSEBUTTONDOWN:
@@ -71,10 +83,6 @@ class WorldQRSZ(sprite.Sprite):
         self.translator.update()
 
     def update(self, dt=0):
-        for tile in self._array.get_all():
-            tile.project(self._proj_mx, self._scale_mx, self._trans_mx)
-            tile.scale(self._scale_mx._scale)
-        return
         # TODO
         self.updated = True
         MOVE = 0.1
@@ -101,11 +109,6 @@ class WorldQRSZ(sprite.Sprite):
 
 
     def draw(self, surface: pg.Surface):
-        for tile in self._array.get_all():
-            tile.draw(surface)
-            # rgb(255, 0, 0)
-            pg.draw.circle(surface, (255, 0, 0), tile.projection, 1)
-        return
         for tile in self.array.painters_draw_order(self.rect):
             tile.set_tint(pg.Color(0, 0, 0, 0))
             tile.draw(surface)

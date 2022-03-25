@@ -1,9 +1,6 @@
-from core.math.transformations import scalers, projections, translations
+from core import test_sprite
 
-p = (1, 1, 1)
+a = test_sprite.Sprite((1, 1), "surf")
 
-a = scalers.ScalingMatrix3(1)
-a.scale(5)
-b = projections.IsometricProjection(1)
-c = translations.TranslationMatrix3((1, 1, 1))
-print(b.transform(c.transform(a.transform(p))))
+
+            a = 1

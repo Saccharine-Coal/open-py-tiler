@@ -1,16 +1,18 @@
 import pygame as pg
 
-from core.abstract import images
 
-class Image(images.AbstractImage):
-    __slots__ = "_true_surface", "_true_rect", "centered"
-    def __init__(self, image: pg.Surface, centered: bool) -> None:
-        self._true_surface = image
-        self._true_rect = image.get_rect()
+class Image:
+    """This class handles all image functions."""
+    __slots__ = "_true_surface", "_true_rect", "centered", "__dict__"
+    def __init__(self, surface: pg.Surface, centered: bool) -> None:
+        self._true_surface = surface
+        self._true_rect = surface.get_rect()
+        self.surface = surface
         self.rect: pg.Rect = self._true_rect.copy()
         self.centered = centered
-        self.scale(1) 
+        self.scale(1)
         self.set_tint(pg.Color(0, 0, 0, 0))
+        self.updated = False
 
     @property
     def factor(self) -> float:
@@ -23,23 +25,24 @@ class Image(images.AbstractImage):
     def _active_surface(self) -> pg.Surface:
         """Wrapper function to reduce transform calls."""
         if self.updated:
-            self.image = pg.transform.scale(self._true_surface, self.rect.size)
+            self.surface = pg.transform.scale(self._true_surface, self.rect.size)
             self.updated = False
-        return self.image
+        return self.surface
 
     @property
     def mask(self) -> pg.mask.Mask:
         return pg.mask.from_surface(self._active_surface)
-
+    '''
     @property
     def _tint(self) -> pg.Surface:
         """Really expensive image "tinting"."""
-        tinted_surface = self.image.copy()
+        tinted_surface = self.surface.copy()
         tinted_surface.fill(self._tint_color, special_flags=pg.BLEND_RGBA_MULT)
         # tinted_surface.set_alpha(self._tint_alpha)
         return tinted_surface
-
+    '''
     def collidepoint(self, img_topleft: tuple, xy: tuple) -> bool:
+        """I think this should be moved into the sprite class."""
         self.updated = True
         if self._active_surface is None: return False # tile is not being rendered
         img_topleft = self.center(img_topleft)
@@ -79,9 +82,11 @@ class Image(images.AbstractImage):
         self._active_surface.set_alpha(alpha)
         if alpha < 1: return
         xy = self.center(xy)
-        if self._tint_color.a != 255:
-            surface.blit(self._active_surface, xy)
-        if self._tint_color.a != 0:
-            surface.blit(self._tint, xy)
-        if self._active_surface is None: return # tile is not being rendered
-                # in mask
+        #if self._tint_color.a != 255:
+        #    surface.blit(self._active_surface, xy)
+        #if self._tint_color.a != 0:
+        #    surface.blit(self._tint, xy)
+        if self._active_surface is None:
+            return # tile is not being rendered
+        else:
+            surface.blit(self.surface, xy)

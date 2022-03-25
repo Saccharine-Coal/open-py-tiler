@@ -1,11 +1,9 @@
 import os
-from tabnanny import verbose
 
 import pygame as pg
 from pygame_gui.ui_manager import UIManager
 
-from core.abstract import sprites
-from core.utils import file_manager
+from core.sprites import sprite
 
 SET_FULLSCREEN = False
 
@@ -27,6 +25,7 @@ class Game:
         self._running = True
         # TODO add fullscreen to game object
         self._FULLSCREEN = fullscreen
+        self._dt = 0
 
     # UNMUTABLE LOOP ---------------------------------------
 
@@ -56,19 +55,19 @@ class Game:
     def _init_extras(self):
         path_to_theme = os.path.join("data", "theme.json")
         self._ui_manager: UIManager = UIManager(self.screen.get_rect().size, path_to_theme, enable_live_theme_updates=True)
-        self._file_manager = file_manager.FileManager(True) 
-        self.sprites: list[sprites.AbstractActiveSprite] = []
-        import keyboard
-        self.keyboard = keyboard.Keyboard(mutable=True, verbose=False)
-        
-        return
-        load.load_font(self._ui_manager)
-        self._keyboard = Keyboard(verbose=True, repeat=0)
-        self._scene_manager: SceneManager = SceneManager(self.screen.get_rect().size, self._ui_manager, self._keyboard)
+        #self._file_manager = file_manager.FileManager(True)
+        self.sprites: list[sprite.Sprite] = []
+        #import keyboard
+        #self.keyboard = keyboard.Keyboard(mutable=True, verbose=False)
 
-    def add_sprite(self, sprite: sprites.AbstractActiveSprite) -> None:
-        if not isinstance(sprite, sprites.AbstractActiveSprite): raise TypeError(f"Not type={sprites.AbstractActiveSprite}")
-        self.sprites.append(sprite)
+        #return
+        #load.load_font(self._ui_manager)
+        #self._keyboard = Keyboard(verbose=True, repeat=0)
+        #self._scene_manager: SceneManager = SceneManager(self.screen.get_rect().size, self._ui_manager, self._keyboard)
+
+    def add_sprite(self, obj: sprite.Sprite) -> None:
+        if not isinstance(obj, sprite.Sprite): raise TypeError(f"Not type={sprite.Sprite}")
+        self.sprites.append(obj)
 
     def _events(self):
         """Catch all pygame events here."""
@@ -76,13 +75,13 @@ class Game:
         for event in events:
             for sprite in self.sprites:
                 sprite.handle_events(event)
-            self.keyboard.handle_events(event)
+        #    self.keyboard.handle_events(event)
         #     self._keyboard.handle_events(event)
         #     self._scene_manager.handle_events(event)
         #     self._ui_manager.process_events(event)
         self._running = self._process_quitting(events, True) # check if quitting after
-        if self.keyboard.get(pg.K_DOWN, pg.K_LEFT):
-            print("down + left")
+        #if self.keyboard.get(pg.K_DOWN, pg.K_LEFT):
+        #    print("down + left")
 
     def _update(self):
         """Update active scene here."""
@@ -91,8 +90,8 @@ class Game:
             sprite.update(self._dt)
         # self.keyboard._reset()
         return
-        self._scene_manager.update(self._dt)
-        
+        #self._scene_manager.update(self._dt)
+
 
     def _render(self):
         """

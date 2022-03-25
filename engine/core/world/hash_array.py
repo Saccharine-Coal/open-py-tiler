@@ -2,19 +2,17 @@ from __future__ import annotations # annotations are strings
 
 import pygame as pg
 
-from core.abstract import hash_arrays
-from core.math import points
-from elements.world import tiles
+from core.math.points import qrsz, xyz, xy
 
 
-class AxialHashArray(hash_arrays.AbstractAxialHashArray):
+class AxialHashArray:
     __slots__ = ("dimensions", "_hashtable", "_indices", "_unit")
     def __init__(self, q_dim: int, r_dim: int, z_dim: int, unit_size: float) -> None:
         self.dimensions: points.PointQRSZ = points.PointQRSZ(q_dim, r_dim, self._get_s(r_dim, q_dim), z_dim)
         self._indices: tuple[points.PointQRSZ] = self._get_indices()
         self._hashtable: dict[points.PointQRSZ: tiles.Tile] = {}
         self._unit_size = unit_size
-        
+
     def __repr__(self) -> str:
         name = self.__class__.__name__
         return name + f"(q, r, s, z)={(len(self.q_range()), len(self.r_range()), len(self.s_range()), len(self.z_range()))}"
@@ -36,7 +34,7 @@ class AxialHashArray(hash_arrays.AbstractAxialHashArray):
         for index in self._indices:
             table[index] = tile_cls(self, index, image)
         self._hashtable = table
-        
+
     def q_range(self, reverse=False) -> range:
         q_dim = self.dimensions.q
         START, STOP, STEP = -q_dim, q_dim + 1, 1
@@ -99,7 +97,7 @@ class AxialHashArray(hash_arrays.AbstractAxialHashArray):
     def get_z_tiles(self, target_qrsz: points.PointQRSZ, radius: int) -> list[tiles.Tile]:
         """Get tiles along the r axis radius units away."""
         return self._tiles_from_vector(target_qrsz, points.ZVECTOR, radius)   
-        
+
     def get_radial_tiles(self, target_qrsz: points.PointQRSZ, radius: int, plane_only=False) -> list[tiles.Tile]:
         tiles = []
         tiles.extend(self.get_r_tiles(target_qrsz, radius))
@@ -199,9 +197,19 @@ class AxialHashArray(hash_arrays.AbstractAxialHashArray):
     #     return planes
 
     def get(self, index: tuple, default=None, verbose: bool=False):
+        """Get an item from the hash array with given index."""
         if verbose:
             print(f"getting {index}. Got {self._hashtable.get(index)}")
         return self._hashtable.get(index, default)
+
+    def get_from_iter(self, indices: list[tuple], default=None, verbose: bool=False) -> list:
+        """Gets items from hash array from a iterable of valid indices."""
+        items = []
+        for index in indices:
+            item = self.get(index, default=default, verbose=verbose)
+            if item is not None:
+                items.append(item)
+        return items
 
     def set(self, index: tuple, new_item) -> None:
         """This is meant to replace a value for an existing key."""
